@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanish · scripts</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23F47174' stroke='%23202020' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #181818;
+            --surface: #202020;
+            --surface-light: #2a2a2a;
+            --border: #3a3a3a;
+            --border-hover: #505050;
+            --text: #cccccc;
+            --text-dim: #909090;
+            --text-bright: #f0f0f0;
+            --accent: #F47174;
+            --accent-dim: rgba(244, 113, 116, 0.08);
+            --glow: rgba(244, 113, 116, 0.25);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* subtle background orbs */
+        .page-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .page-bg .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.2;
+        }
+        .page-bg .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: #F47174;
+            top: -20%;
+            right: -10%;
+        }
+        .page-bg .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: #c05c5e;
+            bottom: -15%;
+            left: -5%;
+        }
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(244, 113, 116, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(244, 113, 116, 0.02) 1px, transparent 1px);
+            background-size: 70px 70px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .wrapper {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem 4rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* header */
+        .scripts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 3rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--text-bright);
+            letter-spacing: -0.02em;
+        }
+        .logo span {
+            color: var(--accent);
+        }
+        .back-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+            font-size: 1rem;
+        }
+        .back-link:hover {
+            color: var(--accent);
+        }
+
+        /* title */
+        .page-title {
+            margin-bottom: 3rem;
+        }
+        .page-title .label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .page-title h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            color: var(--text-bright);
+            line-height: 1.1;
+        }
+
+        /* script sections */
+        .script-section {
+            margin-bottom: 4rem;
+        }
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-head h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--text-bright);
+        }
+        .official-badge {
+            background: var(--accent);
+            color: #181818;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .unofficial-badge {
+            background: #3a3a3a;
+            color: var(--text-bright);
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: 1px solid #555;
+        }
+
+        .script-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .script-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 1.8rem 1.5rem 1.5rem;
+            transition: transform 0.2s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        .script-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px -15px rgba(244, 113, 116, 0.2), 0 0 0 1px rgba(244,113,116,0.2);
+            border-color: var(--accent-dim);
+        }
+
+        .script-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-bright);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .script-name .game-tag {
+            font-size: 0.7rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--accent-dim);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .script-desc {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 1.8rem;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .code-block {
+            background: #121212;
+            border-radius: 16px;
+            padding: 1.2rem;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .code-block pre {
+            font-family: 'DM Sans', monospace;
+            font-size: 0.8rem;
+            color: #d4d4d4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: #2a2a2a;
+            border: none;
+            color: var(--text-dim);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.9rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            border: 1px solid #3f3f3f;
+        }
+        .copy-btn:hover {
+            background: var(--accent);
+            color: #181818;
+            border-color: var(--accent);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-bright);
+            background: rgba(244,113,116,0.15);
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            width: fit-content;
+            border: 1px solid var(--accent-dim);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0%,100%{ opacity: 1; } 50%{ opacity: 0.4; }
+        }
+
+        /* footer */
+        .scripts-footer {
+            margin-top: 4rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        .foot-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .foot-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .foot-links a:hover {
+            color: var(--accent);
+        }
+
+        @media (max-width: 650px) {
+            .wrapper { padding: 1.5rem 1.2rem; }
+            .scripts-header { flex-direction: column; align-items: start; gap: 1rem; }
+            .script-name { flex-direction: column; align-items: start; gap: 0.4rem; }
+            .scripts-footer { flex-direction: column; gap: 0.8rem; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <!-- background ambiance -->
+    <div class="page-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="grid-bg"></div>
+    </div>
+
+    <div class="wrapper">
+        <!-- header with back/home link (can be adjusted) -->
+        <div class="scripts-header">
+            <div class="logo">VANISH<span>.</span></div>
+            <a href="#" class="back-link" onclick="history.back(); return false;">← back</a>
+        </div>
+
+        <div class="page-title">
+            <div class="label">execution</div>
+            <h1>Scripts</h1>
+        </div>
+
+        <!-- OFFICIAL section -->
+        <div class="script-section">
+            <div class="section-head">
+                <h2>Official</h2>
+                <span class="official-badge">verified</span>
+            </div>
+            <div class="script-grid">
+                <!-- MAIN script card -->
+                <div class="script-card">
+                    <div class="script-name">
+                        MAIN <span class="game-tag">universal</span>
+                    </div>
+                    <div class="script-desc">
+                        Core Vanish script – load this for full functionality. Stable, regularly updated.
+                    </div>
+                    <div class="code-block" id="block-main">
+                        <button class="copy-btn" onclick="copyToClipboard('code-main')">copy</button>
+                        <pre id="code-main">loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregory909/scripts/refs/heads/main/Main.lua"))()</pre>
+                    </div>
+                    <div class="status-badge">
+                        <span class="status-dot"></span> active / official
+                    </div>
+                </div>
+
+                <!-- UNIVERSAL script card -->
+                <div class="script-card">
+                    <div class="script-name">
+                        UNIVERSAL <span class="game-tag">multi‑game</span>
+                    </div>
+                    <div class="script-desc">
+                        Lightweight universal script for quick exploits in many Roblox games. 
+                    </div>
+                    <div class="code-block" id="block-universal">
+                        <button class="copy-btn" onclick="copyToClipboard('code-universal')">copy</button>
+                        <pre id="code-universal">loadstring(game:HttpGet("https://raw.githubusercontent.com/Gregory909/scripts/refs/heads/main/Universal.lua"))()</pre>
+                    </div>
+                    <div class="status-badge">
+                        <span class="status-dot"></span> active / official
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- UNOFFICIAL section (community/legacy) -->
+        <div class="script-section">
+            <div class="section-head">
+                <h2>Unofficial</h2>
+                <span class="unofficial-badge">verified</span>
+            </div>
+            <div class="script-grid">
+                <!-- ARSENAL / APOCALYPSE RISING 2 card -->
+                <div class="script-card">
+                    <div class="script-name">
+                        ARSENAL / APOCALYPSE RISING 2 <span class="game-tag">FPS</span>
+                    </div>
+                    <div class="script-desc">
+                        Legacy script for Arsenal & Apocalypse Rising 2.
+                    </div>
+                    <div class="code-block" id="block-unofficial">
+                        <button class="copy-btn" onclick="copyToClipboard('code-unofficial')">copy</button>
+                        <pre id="code-unofficial">loadstring(game:HttpGet("https://raw.githubusercontent.com/Rx4RblxScripts/VanishStudiosScripts/refs/heads/main/VanishMain.lua"))()</pre>
+                    </div>
+                    <div class="status-badge">
+                        <span class="status-dot"></span> unofficial / closed source from us
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- additional info / footer -->
+        <div class="scripts-footer">
+            <div class="copy">© 2026 Vanish. scripts</div>
+            <div class="foot-links">
+                <a href="#">servers</a>
+                <a href="#">discord</a>
+                <a href="#">docs</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // simple copy function
+        function copyToClipboard(elementId) {
+            const code = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                // brief visual feedback
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = 'copied!';
+                btn.style.background = '#F47174';
+                btn.style.color = '#181818';
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = '#2a2a2a';
+                    btn.style.color = '#909090';
+                }, 1500);
+            }).catch(err => {
+                alert('could not copy text');
+            });
+        }
+
+        document.querySelectorAll('.copy-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const codeBlock = this.closest('.code-block').querySelector('pre').id;
+                copyToClipboard(codeBlock);
+            });
+        });
+    </script>
+</body>
+</html>
