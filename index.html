@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanish · tools</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23F47174' stroke='%23202020' stroke-width='2'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #181818;        /* deep dark background */
+            --surface: #202020;    /* cards / panels */
+            --surface-light: #2a2a2a;
+            --border: #3a3a3a;
+            --border-hover: #505050;
+            --text: #cccccc;
+            --text-dim: #909090;
+            --text-bright: #f0f0f0;
+            --accent: #F47174;     /* soft coral/pink */
+            --accent-dim: rgba(244, 113, 116, 0.08);
+            --glow: rgba(244, 113, 116, 0.25);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* fixed header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 0 clamp(1.5rem, 4vw, 4rem);
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(24, 24, 24, 0.75);
+            backdrop-filter: blur(16px) saturate(1.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-bright);
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            position: relative;
+        }
+
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.25s;
+        }
+
+        nav a:hover {
+            color: var(--text-bright);
+        }
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        nav .nav-cta {
+            background: var(--accent);
+            color: #181818 !important;
+            padding: 0.5rem 1.4rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 40px;
+            letter-spacing: 0.01em;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(244, 113, 116, 0.3);
+        }
+        nav .nav-cta::after { display: none; }
+        nav .nav-cta:hover {
+            opacity: 0.92;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px var(--glow);
+            color: #181818 !important;
+        }
+
+        /* HERO */
+        .hero {
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 6rem 2rem;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .hero-bg .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.25;
+            animation: drift 22s infinite alternate ease-in-out;
+        }
+
+        .hero-bg .orb-1 {
+            width: 650px;
+            height: 650px;
+            background: #F47174;
+            top: -20%;
+            right: -10%;
+            opacity: 0.3;
+        }
+
+        .hero-bg .orb-2 {
+            width: 450px;
+            height: 450px;
+            background: #c05c5e;
+            bottom: -15%;
+            left: -5%;
+            animation-delay: -7s;
+        }
+
+        @keyframes drift {
+            to { transform: translate(50px, -40px) scale(1.1); }
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(244, 113, 116, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(244, 113, 116, 0.03) 1px, transparent 1px);
+            background-size: 70px 70px;
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 20%, transparent 80%);
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 2.2rem;
+            opacity: 0;
+            animation: revealUp 0.6s 0.1s forwards;
+        }
+
+        .hero-tag .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulseDot 2.2s infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.2); }
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3rem, 10vw, 7rem);
+            color: var(--text-bright);
+            line-height: 1;
+            letter-spacing: -0.035em;
+            margin-bottom: 1.8rem;
+            opacity: 0;
+            animation: revealUp 0.7s 0.2s forwards;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: underline 3px rgba(244, 113, 116, 0.5);
+            text-underline-offset: 8px;
+        }
+
+        .hero-sub {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-dim);
+            max-width: 520px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+            opacity: 0;
+            animation: revealUp 0.7s 0.35s forwards;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: revealUp 0.7s 0.5s forwards;
+        }
+
+        @keyframes revealUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.9rem 2.2rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #181818;
+            box-shadow: 0 8px 20px rgba(244, 113, 116, 0.3);
+        }
+        .btn-accent:hover {
+            background: #f15d60;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px var(--glow);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            background: rgba(244, 113, 116, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .scroll-cue {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            opacity: 0;
+            animation: revealUp 0.7s 0.9s forwards;
+        }
+        .scroll-cue span {
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+        }
+        .scroll-cue .line {
+            width: 1px;
+            height: 48px;
+            background: linear-gradient(var(--accent), transparent);
+            animation: scrollCue 2.2s infinite;
+        }
+        @keyframes scrollCue {
+            0% { opacity: 0.2; transform: scaleY(0.5); }
+            50% { opacity: 1; transform: scaleY(1); }
+            100% { opacity: 0.2; transform: scaleY(0.5); }
+        }
+
+        /* PRODUCTS SECTION */
+        #products {
+            padding: clamp(4rem, 8vw, 7rem) clamp(1.5rem, 4vw, 4rem);
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .section-title-group h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: clamp(2rem, 5vw, 3rem);
+            color: var(--text-bright);
+            letter-spacing: -0.02em;
+        }
+
+        .section-title-group .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--surface);
+            border-radius: 60px;
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.6rem 1.8rem;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab.active {
+            background: var(--accent);
+            color: #181818;
+            font-weight: 700;
+        }
+        .tab:not(.active):hover {
+            color: var(--text-bright);
+            background: var(--accent-dim);
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1.8rem;
+            transition: opacity 0.25s;
+            perspective: 1200px;
+        }
+        .grid.fade { opacity: 0.3; }
+
+        .card-wrap {
+            grid-column: span 2;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.5s, transform 0.5s;
+        }
+        .card-wrap.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 1100px) {
+            .grid { grid-template-columns: repeat(2,1fr); }
+            .card-wrap { grid-column: span 1 !important; }
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.2s ease, box-shadow 0.3s;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        .card:hover {
+            box-shadow: 0 30px 50px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(244, 113, 116, 0.3);
+        }
+
+        .card-glare {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            border-radius: 20px;
+            opacity: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(244,113,116,0.2), transparent 70%);
+            transition: opacity 0.3s;
+        }
+        .card:hover .card-glare { opacity: 1; }
+
+        .card-img {
+            position: relative;
+            height: 200px;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+        .card:hover .card-img img { transform: scale(1.07); }
+
+        .card-img .badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(24,24,24,0.8);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--border);
+            padding: 0.3rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-bright);
+            border-radius: 30px;
+            z-index: 2;
+            transition: 0.2s;
+        }
+        .card:hover .badge {
+            background: var(--accent);
+            color: #181818;
+            border-color: var(--accent);
+        }
+
+        .card-body {
+            padding: 1.8rem 1.5rem 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-bright);
+            margin-bottom: 0.4rem;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            line-height: 1.55;
+            margin-bottom: 1.5rem;
+            flex: 1;
+        }
+
+        .card-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .card-btn:hover:not(:disabled) {
+            background: var(--accent);
+            color: #181818;
+            border-color: var(--accent);
+        }
+        .card-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* footer */
+        footer {
+            padding: 2.5rem clamp(1.5rem,4vw,4rem);
+            border-top: 1px solid var(--border);
+            max-width: 1320px;
+            margin: 5rem auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .foot-links {
+            display: flex;
+            gap: 2rem;
+        }
+        .foot-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .foot-links a:hover { color: var(--accent); }
+
+        @media (max-width: 700px) {
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .tabs { width: 100%; }
+            .tab { flex: 1; text-align: center; }
+            footer { flex-direction: column; gap: 1rem; text-align: center; }
+        }
+        @media (max-width: 480px) {
+            header { height: 64px; }
+            .hero { padding: 5rem 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">VANISH<span>.</span></div>
+        <nav>
+            <a href="#products" class="desk">products</a>
+            <a href="#" class="desk">servers</a>
+            <a href="#" class="nav-cta">Discord</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="hero-grid"></div>
+        </div>
+        <div class="hero-inner">
+            <div class="hero-tag">
+                <span class="dot"></span>
+                vanishingly powerful
+            </div>
+            <h1>tools with the<br><em>looks</em></h1>
+            <p class="hero-sub">Vanish gives you purity and speed. Minimalism, control, reliability — for those who appreciate the essence.</p>
+            <div class="hero-actions">
+                <a href="#" class="btn btn-accent">join</a>
+                <a href="#products" class="btn btn-ghost">products</a>
+            </div>
+        </div>
+        <div class="scroll-cue">
+            <span>scroll</span>
+            <div class="line"></div>
+        </div>
+    </section>
+
+    <section id="products">
+        <div class="section-header">
+            <div class="section-title-group">
+                <div class="label">choose category</div>
+                <h2>Vanish products</h2>
+            </div>
+            <div class="tabs" id="tabs"></div>
+        </div>
+        <div class="grid" id="grid"></div>
+    </section>
+
+    <footer>
+        <div class="copy">© 2026 Vanish. invisible solutions</div>
+        <div class="foot-links">
+            <a href="#">servers</a>
+            <a href="#">discord</a>
+            <a href="#">docs</a>
+        </div>
+    </footer>
+
+    <script>
+        (function() {
+            // Vanish products – redesigned for the new aesthetic
+            const products = [
+                {
+                    id: 1,
+                    name: "Vanish Core (Windows)",
+                    category: "Roblox",
+                    type: "Software",
+                    image: "https://i.imgur.com/kpZRvqE.jpeg",   // abstract dark/glow placeholder
+                    description: "Fast and stable Roblox executor. Full freedom of action. Soon,",
+                    downloadLink: null,
+                },
+                {
+                    id: 2,
+                    name: "PolyVanish",
+                    category: "Polytoria",
+                    type: "Software",
+                    image: "https://i.imgur.com/kpZRvqE.jpeg",
+                    description: "Vanish for Polytoria, available now.",
+                    downloadLink: "#",
+                },
+                {
+                    id: 3,
+                    name: "Vanish for CS2",
+                    category: "CS2",
+                    type: "Software",
+                    image: "https://i.imgur.com/tbXaBqA.jpeg",
+                    description: "Fine-tune your interface and more. For Windows.",
+                    downloadLink: null,
+                },
+                {
+                    id: 4,
+                    name: "Vanish Linux (CS2)",
+                    category: "CS2",
+                    type: "Software",
+                    image: "https://i.imgur.com/tbXaBqA.jpeg",
+                    description: "Native version for Linux. Await release.",
+                    downloadLink: null,
+                },
+
+                {
+                    id: 5,
+                    name: "Vanish API .NET 8.0",
+                    category: "API",
+                    type: "Tools",
+                    image: "https://i.imgur.com/cLsrWpU.jpeg",
+                    description: "Build your own solutions on top of the Vanish API.",
+                    downloadLink: "#",
+                },
+                {
+                    id: 6,
+                    name: "Vanish API .NET 4.8",
+                    category: "API",
+                    type: "Tools",
+                    image: "https://i.imgur.com/cLsrWpU.jpeg",
+                    description: "Compatibility with legacy projects, same reliability.",
+                    downloadLink: "#",
+                }
+            ];
+
+            const types = [...new Set(products.map(p => p.type))]; // ["Software","Tools"]
+            let activeTab = types[0]; // Software
+
+            const tabsEl = document.getElementById('tabs');
+            const gridEl = document.getElementById('grid');
+
+            // render tabs
+            types.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'tab' + (t === activeTab ? ' active' : '');
+                btn.textContent = t; 
+                btn.addEventListener('click', () => switchTab(t));
+                tabsEl.appendChild(btn);
+            });
+
+            function switchTab(tabType) {
+                activeTab = tabType;
+                // update active class
+                document.querySelectorAll('.tab').forEach((btn, idx) => {
+                    const type = types[idx];
+                    btn.classList.toggle('active', type === activeTab);
+                });
+                gridEl.classList.add('fade');
+                setTimeout(() => {
+                    render();
+                    gridEl.classList.remove('fade');
+                }, 200);
+            }
+
+            function render() {
+                gridEl.innerHTML = '';
+                const filtered = products.filter(p => p.type === activeTab);
+                filtered.forEach((p, i) => {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'card-wrap';
+                    wrap.style.transitionDelay = i * 60 + 'ms';
+                    wrap.innerHTML = `
+                        <div class="card">
+                            <div class="card-glare"></div>
+                            <div class="card-img">
+                                <img src="${p.image}" alt="${p.name}" onerror="this.src='https://i.imgur.com/VyLZzjN.jpeg'">
+                                <div class="badge">${p.category}</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-name">${p.name}</div>
+                                <div class="card-desc">${p.description}</div>
+                                <button class="card-btn" ${!p.downloadLink ? 'disabled' : ''} onclick="${p.downloadLink ? `window.open('${p.downloadLink}','_blank')` : ''}">${p.downloadLink ? 'Download' : 'Soon'}</button>
+                            </div>
+                        </div>
+                    `;
+
+                    gridEl.appendChild(wrap);
+
+                    // optional mini 3D effect on mouse move
+                    const card = wrap.querySelector('.card');
+                    const glare = wrap.querySelector('.card-glare');
+                    let raf;
+
+                    wrap.addEventListener('mousemove', (e) => {
+                        if (raf) cancelAnimationFrame(raf);
+                        raf = requestAnimationFrame(() => {
+                            const rect = wrap.getBoundingClientRect();
+                            const x = (e.clientX - rect.left) / rect.width;
+                            const y = (e.clientY - rect.top) / rect.height;
+                            const rotY = (x - 0.5) * 12;
+                            const rotX = (0.5 - y) * 12;
+                            card.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) scale3d(1.01, 1.01, 1.01)`;
+                            glare.style.background = `radial-gradient(circle at ${x * 100}% ${y * 100}%, rgba(244, 113, 116, 0.25), transparent 70%)`;
+                        });
+                    });
+
+                    wrap.addEventListener('mouseleave', () => {
+                        if (raf) cancelAnimationFrame(raf);
+                        card.style.transform = '';
+                        glare.style.background = '';
+                    });
+                });
+
+                // show with animation after DOM insertion
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        gridEl.querySelectorAll('.card-wrap').forEach(c => c.classList.add('show'));
+                        // adjust columns for incomplete row (grid handles this automatically, but fine-tuning for visual)
+                        const wraps = gridEl.querySelectorAll('.card-wrap');
+                        const total = wraps.length;
+                        const cols = 3;
+                        const remainder = total % cols;
+                        if (remainder === 1 && total > 1) {
+                            wraps[total - 1].style.gridColumn = 'span 6'; // last one full width
+                        } else if (remainder === 2) {
+                            wraps[total - 2].style.gridColumn = 'span 3';
+                            wraps[total - 1].style.gridColumn = 'span 3';
+                        }
+                    });
+                });
+            }
+
+            render();
+        })();
+    </script>
+</body>
+</html>
